@@ -7,8 +7,6 @@ configuration.yaml file.
 hello_world_async:
 """
 """Provide the initial setup."""
-import asyncio
-
 from __future__ import annotations
 import logging
 # from .const import *

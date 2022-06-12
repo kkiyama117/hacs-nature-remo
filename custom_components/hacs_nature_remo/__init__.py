@@ -21,10 +21,18 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Setup our skeleton component. Provide Setup of platform."""
 
     # States are in the format DOMAIN.OBJECT_ID.
-    hass.states.async_set(f"{const.DOMAIN}.Hello_World", 'Works!')
+    hass.states.async_set(f"{DOMAIN}.Hello_World", 'Works!')
     _LOGGER.debug("Setting up Nature Remo component.")
 
     # Return boolean to indicate that initialization was successfully.
+    return True
+
+
+async def async_setup_entry(hass, config_entry):
+    for component in PLATFORMS:
+        hass.async_create_task(
+            hass.config_entries.async_forward_entry_setup(config_entry, component)
+        )
     return True
 
 #

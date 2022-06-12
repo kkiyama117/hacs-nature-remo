@@ -8,13 +8,12 @@ hello_world_async:
 """
 """Provide the initial setup."""
 import logging
-# from .const import *
+from .const import *
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import ConfigType
 
 # The domain of your component. Should be equal to the name of your component.
-DOMAIN = "hacs_nature_remo"
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -22,7 +21,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Setup our skeleton component. Provide Setup of platform."""
 
     # States are in the format DOMAIN.OBJECT_ID.
-    hass.states.async_set('hacs_nature_remo.Hello_World', 'Works!')
+    hass.states.async_set(f"{const.DOMAIN}.Hello_World", 'Works!')
     _LOGGER.debug("Setting up Nature Remo component.")
 
     # Return boolean to indicate that initialization was successfully.

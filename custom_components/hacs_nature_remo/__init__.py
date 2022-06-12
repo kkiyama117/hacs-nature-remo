@@ -24,23 +24,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     hass.states.async_set(f"{DOMAIN}.Hello_World", 'Works!')
     _LOGGER.debug("Setting up Nature Remo component.")
 
-    def handle_hello(call):
-        """Handle the service call."""
-        name = call.data.get("name", 'world')
-
-        hass.states.set(f"{DOMAIN}.hello", name)
-
-    hass.services.register(DOMAIN, "hello", handle_hello)
-
     # Return boolean to indicate that initialization was successfully.
-    return True
-
-
-async def async_setup_entry(hass, config_entry):
-    for component in PLATFORMS:
-        hass.async_create_task(
-            hass.config_entries.async_forward_entry_setup(config_entry, component)
-        )
     return True
 
 #

@@ -1,0 +1,9 @@
+{
+  "domain": "hacs_nature_remo",
+  "name": "Nature remo",
+  "documentation": "https://www.example.com",
+  "dependencies": [],
+  "codeowners": [],
+  "requirements": [],
+  "iot_class": "local_polling"
+}

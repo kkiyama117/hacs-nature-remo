@@ -7,7 +7,6 @@ configuration.yaml file.
 hello_world_async:
 """
 """Provide the initial setup."""
-from __future__ import annotations
 import logging
 # from .const import *
 
@@ -22,8 +21,9 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Setup our skeleton component. Provide Setup of platform."""
 
-# States are in the format DOMAIN.OBJECT_ID.
+    # States are in the format DOMAIN.OBJECT_ID.
     hass.states.async_set('hacs_nature_remo.Hello_World', 'Works!')
+    _LOGGER.debug("Setting up Nature Remo component.")
 
     # Return boolean to indicate that initialization was successfully.
     return True

@@ -48,6 +48,8 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         "config": config[DOMAIN],
     }
 
+    _LOGGER.debug(hass.data[DOMAIN])
+    _LOGGER.debug("Setting up Nature Remo component finished with no error.")
     # Return boolean to indicate that initialization was successfully.
     return True
 

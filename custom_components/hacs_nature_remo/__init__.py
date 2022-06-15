@@ -5,7 +5,7 @@ import voluptuous as vol
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.helpers.entity import Entity
-from homeassistant.components.sensor import PLATFORM_SCHEMA
+from homeassistant.helpers.config_validation import PLATFORM_SCHEMA, time_period
 from homeassistant.const import CONF_ACCESS_TOKEN, CONF_SCAN_INTERVAL
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import ConfigType
@@ -21,10 +21,10 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
         DOMAIN: vol.Schema(
             {
                 vol.Required(CONF_ACCESS_TOKEN): cv.string,
+                vol.Optional(CONF_SCAN_INTERVAL): time_period,
             }
-        )
+        ),
     },
-    extra=vol.ALLOW_EXTRA,
 )
 
 

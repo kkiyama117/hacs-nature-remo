@@ -16,12 +16,22 @@ from .const import *
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
+# PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
+#     {
+#         DOMAIN: vol.Schema(
+#             {
+#                 vol.Required(CONF_ACCESS_TOKEN): cv.string,
+#                 vol.Optional(CONF_SCAN_INTERVAL): time_period,
+#             }
+#         ),
+#     },
+# )
+CONFIG_SCHEMA = vol.Schema(
     {
         DOMAIN: vol.Schema(
             {
                 vol.Required(CONF_ACCESS_TOKEN): cv.string,
-                vol.Optional(CONF_SCAN_INTERVAL): time_period,
+                # vol.Optional(CONF_SCAN_INTERVAL): time_period,
             }
         ),
     },
@@ -31,8 +41,8 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Setup our skeleton component. Provide Setup of platform."""
     _LOGGER.debug("Setting up Nature Remo component.")
-    hass.states.async_set(f"{DOMAIN}.hello_world", 'Works!')
-    access_token = config[DOMAIN][CONF_ACCESS_TOKEN]
+    # hass.states.async_set(f"{DOMAIN}.hello_world", 'Works!')
+    access_token = config[DOMAIN].get(CONF_ACCESS_TOKEN)
     api = WrappedAPI(access_token=access_token)
     coordinator = hass.data[DOMAIN] = DataUpdateCoordinator(
         hass,
@@ -50,7 +60,6 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
     _LOGGER.debug(hass.data[DOMAIN])
     _LOGGER.debug("Setting up Nature Remo component finished with no error.")
-    # Return boolean to indicate that initialization was successfully.
     return True
 
 

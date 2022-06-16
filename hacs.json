@@ -1,6 +1,5 @@
 {
-  "name": "hacs_nature_remo",
-  "content_in_root": false,
+  "name": "Nature Remo",
   "render_readme": true,
-  "iot_class": "Cloud Polling"
+  "iot_class": "cloud_polling"
 }

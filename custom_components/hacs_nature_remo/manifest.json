@@ -1,15 +1,11 @@
 {
-  "domain": "hacs_nature_remo",
-  "name": "Nature remo",
-  "documentation": "https://www.example.com",
-  "issue_tracker": "https://github.com/kkiyama117/hacs-nature-remo/issues",
+  "codeowners": ["@kkiyama117"],
+  "config_flow": true,
   "dependencies": [],
-  "codeowners": [
-    "@kkiyama117"
-  ],
-  "requirements": [
-    "git+https://github.com/kkiyama117/nature-remo.git"
-  ],
-  "iot_class": "local_polling",
-  "version": "0.0.2b1"
+  "documentation": "https://github.com/kkiyama117/hacs-nature-remo",
+  "domain": "hacs_nature_remo",
+  "iot_class": "cloud_polling",
+  "name": "Nature Remo",
+  "requirements": [],
+  "version": "0.0.1"
 }

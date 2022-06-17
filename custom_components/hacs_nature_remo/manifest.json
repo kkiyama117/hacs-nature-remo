@@ -1,6 +1,6 @@
 {
   "codeowners": ["@kkiyama117"],
-  "config_flow": true,
+  "config_flow": false,
   "dependencies": [],
   "documentation": "https://github.com/kkiyama117/hacs-nature-remo",
   "issue_tracker": "https://github.com/kkiyama117/hacs-nature-remo/issues",

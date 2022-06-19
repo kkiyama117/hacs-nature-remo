@@ -43,5 +43,7 @@ class ExampleSensor(SensorEntity):
         """Fetch new state data for the sensor.
         This is the only method that should fetch new data for Home Assistant.
         """
-        self._attr_native_value = self.hass.data[DOMAIN]['temperature']
-        LOGGER.debug(f"get value of  {self._attr_name}: {self._attr_native_value}")
+        data: dict = self.hass.data[DOMAIN]
+        if data is not None:
+            self._attr_native_value = data.get('temperature')
+            LOGGER.debug(f"get value of  {self._attr_name}: {self._attr_native_value}")

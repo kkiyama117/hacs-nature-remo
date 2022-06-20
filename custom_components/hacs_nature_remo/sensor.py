@@ -32,7 +32,7 @@ async def async_setup_platform(
     if discovery_info is None:
         return
     devices: list[NRDevice] = hass.data.get(DOMAIN, {"devices": []})["devices"]
-    sensors = [RemoMiniEntity(get_api_base(hass), i.id) for i in devices]
+    sensors = [RemoMiniEntity(hass, get_api_base(hass), i) for i in devices]
     # async_add_entities(sensors, update_before_add=True)
     async_add_entities(sensors)
 
@@ -46,32 +46,35 @@ class RemoMiniEntity(SensorEntity):
     _attr_state_class = SensorStateClass.MEASUREMENT
     """Representation of a sensor."""
 
-    def __init__(self, api, device_id: str):
+    def __init__(self, hass, api, device: NRDevice):
+        self._hass = hass
         self._api = api
-        self._device_id = device_id
-        devices = self._api.get_devices()
-        device = list(filter(lambda x: x.id == device_id, devices))[0]
+        self._device = device
         LOGGER.debug(f"initialize device: {self.name}: {self._api}")
         self._attr_device_info = DeviceInfo(
             default_manufacturer="Nature",
-            identifiers={(DOMAIN, device.id)},
-            model=device.serial_number,
-            name=device.name,
-            sw_version=device.firmware_version
+            identifiers={(DOMAIN, self._device.id)},
+            model=self._device.serial_number,
+            name=self._device.name,
+            sw_version=self._device.firmware_version
         )
 
     @property
     def name(self) -> str | None:
-        return f"{DOMAIN}.domain.{self.device_info.get('id')}"
+        return f"{DOMAIN}.domain.{self._device.id}"
 
     def update(self) -> None:
         """Fetch new state data for the sensor.
         This is the only method that should fetch new data for Home Assistant.
         """
         if self._api is not None:
+            # devices = await self._hass.async_add_executor_job(
+            #     self._api.get_devices
+            # )
             devices = self._api.get_devices()
-            device = list(filter(lambda x: x.id == self._device_id, devices))[0]
-            self._attr_native_value = self._api.newest_events.get('te').val
+            device = list(filter(lambda x: x.id == self._device.id, devices))[0]
+            self._device = device
+            self._attr_native_value = self._device.newest_events.get('te').val
             LOGGER.debug(f"get value of  {self._attr_name}: {self._attr_native_value}")
         else:
             LOGGER.error(f"error get temperature of  {self._attr_name}")

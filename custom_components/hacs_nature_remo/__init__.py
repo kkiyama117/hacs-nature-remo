@@ -1,10 +1,15 @@
+import asyncio
+
+import aiohttp
 from homeassistant import core
 from homeassistant.const import CONF_ACCESS_TOKEN
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 import homeassistant.helpers.config_validation as cv
-from remo import NatureRemoAPI, NatureRemoError
+from remo import NatureRemoError
 import voluptuous as vol
 
 from .const import *
+from .wrapped_api import NatureRemoAPI, SessionAPI
 
 CONFIG_SCHEMA = vol.Schema({
     DOMAIN: vol.Required({
@@ -13,10 +18,30 @@ CONFIG_SCHEMA = vol.Schema({
 }, extra=vol.ALLOW_EXTRA)
 
 
+class WrappedSession(SessionAPI):
+    __response_type__ = aiohttp.ClientResponse
+
+    def __init__(self, session: aiohttp.ClientSession):
+        super().__init__()
+        self._session = session
+
+    def get(self, url, headers) -> __response_type__:
+        loop = asyncio.get_event_loop()
+        response = loop.run_until_complete(self._session.get(url, headers=headers))
+        response_json = loop.run_until_complete(response.json())
+        return response_json
+
+    def post(self, url, headers, data) -> __response_type__:
+        loop = asyncio.get_event_loop()
+        response = loop.run_until_complete(self._session.get(url, data=data, headers=headers))
+        response_json = loop.run_until_complete(response.json())
+        return response_json
+
+
 async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
     """Set up the Nature Remo platform."""
     # @TODO: Add setup code.
-    LOGGER.debug(f"setup: {config}")
+    LOGGER.debug("Setting up Nature Remo component.")
     if config is None:
         conf = {}
     else:
@@ -25,6 +50,8 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
     data = {}
 
     access_token: str = conf.get(CONF_ACCESS_TOKEN, "")
+    session = async_get_clientsession(hass)
+    api = NatureRemoAPI(access_token, session=WrappedSession(session))
     data.setdefault(CONF_ACCESS_TOKEN, access_token)
     if len(access_token) != 0:
         try:

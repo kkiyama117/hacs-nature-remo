@@ -14,7 +14,6 @@ from homeassistant.helpers.typing import (
     DiscoveryInfoType,
     HomeAssistantType,
 )
-from remo import NatureRemoAPI
 from remo.models import Device as NRDevice
 
 from .const import DOMAIN, LOGGER
@@ -31,6 +30,7 @@ async def async_setup_platform(
     # We only want this platform to be set up via discovery.
     if discovery_info is None:
         return
+    LOGGER.debug("Setting up sensor platform.")
     devices: list[NRDevice] = hass.data.get(DOMAIN, {"devices": []})["devices"]
     sensors = [RemoMiniEntity(hass, get_api_base(hass), i) for i in devices]
     # async_add_entities(sensors, update_before_add=True)
@@ -40,16 +40,17 @@ async def async_setup_platform(
 class RemoMiniEntity(SensorEntity):
     """Representation of a Sensor."""
 
-    _attr_name = f"{DOMAIN}.temperature"
-    _attr_native_unit_of_measurement = TEMP_CELSIUS
+    # _attr_name = f"{DOMAIN}.device"
     _attr_device_class = SensorDeviceClass.TEMPERATURE
     _attr_state_class = SensorStateClass.MEASUREMENT
     """Representation of a sensor."""
 
     def __init__(self, hass, api, device: NRDevice):
-        self._hass = hass
+        super().__init__()
         self._api = api
         self._device = device
+        self._attr_name = f"{DOMAIN}_{self._device.name}"
+        self._attr_unique_id = f"{DOMAIN}.domain.{self._device.name}"
         LOGGER.debug(f"initialize device: {self.name}: {self._api}")
         self._attr_device_info = DeviceInfo(
             default_manufacturer="Nature",
@@ -59,9 +60,8 @@ class RemoMiniEntity(SensorEntity):
             sw_version=self._device.firmware_version
         )
 
-    @property
-    def name(self) -> str | None:
-        return f"{DOMAIN}.domain.{self._device.id}"
+    def _set_temp_unit(self):
+        self._attr_native_unit_of_measurement = TEMP_CELSIUS
 
     def update(self) -> None:
         """Fetch new state data for the sensor.

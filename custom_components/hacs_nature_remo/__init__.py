@@ -1,15 +1,15 @@
-import asyncio
-
-import aiohttp
 from homeassistant import core
 from homeassistant.const import CONF_ACCESS_TOKEN
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 import homeassistant.helpers.config_validation as cv
-from remo import NatureRemoError
+from homeassistant.helpers.entity import DeviceInfo, Entity
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
+from remo.models import Appliance, Device
 import voluptuous as vol
 
+from .api import HTTPWrapper, NatureRemoAPIVer1, Response
+from .api.wrapper import AioHttpWrapper
 from .const import *
-from .wrapped_api import NatureRemoAPI, SessionAPI
 
 CONFIG_SCHEMA = vol.Schema({
     DOMAIN: vol.Required({
@@ -18,24 +18,14 @@ CONFIG_SCHEMA = vol.Schema({
 }, extra=vol.ALLOW_EXTRA)
 
 
-class WrappedSession(SessionAPI):
-    __response_type__ = aiohttp.ClientResponse
+def __get_update_method(_api: NatureRemoAPIVer1):
+    async def __inner__():
+        LOGGER.debug("Trying to fetch appliance and device list from API.")
+        appliances = await _api.get_appliances()
+        devices = await _api.get_devices()
+        return {"appliances": appliances, "devices": devices}
 
-    def __init__(self, session: aiohttp.ClientSession):
-        super().__init__()
-        self._session = session
-
-    def get(self, url, headers) -> __response_type__:
-        loop = asyncio.get_event_loop()
-        response = loop.run_until_complete(self._session.get(url, headers=headers))
-        response_json = loop.run_until_complete(response.json())
-        return response_json
-
-    def post(self, url, headers, data) -> __response_type__:
-        loop = asyncio.get_event_loop()
-        response = loop.run_until_complete(self._session.get(url, data=data, headers=headers))
-        response_json = loop.run_until_complete(response.json())
-        return response_json
+    return __inner__
 
 
 async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
@@ -47,32 +37,31 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
     else:
         conf = config
     conf = conf.get(DOMAIN, {})
-    data = {}
+
+    session = async_get_clientsession(hass)
 
     access_token: str = conf.get(CONF_ACCESS_TOKEN, "")
-    session = async_get_clientsession(hass)
-    api = NatureRemoAPI(access_token, session=WrappedSession(session))
-    data.setdefault(CONF_ACCESS_TOKEN, access_token)
-    if len(access_token) != 0:
-        try:
-            api = NatureRemoAPI(access_token)
-            user_data = await hass.async_add_executor_job(api.get_user)
-            device_data = await hass.async_add_executor_job(api.get_devices)
-            app_data = await hass.async_add_executor_job(api.get_appliances)
-        except NatureRemoError as e:
-            user_data = None
-            device_data = None
-            app_data = None
-            LOGGER.error(e)
-        data.setdefault('user', user_data)
-        data.setdefault('devices', device_data)
-        data.setdefault('appliances', app_data)
 
-    data.setdefault(
-        'temperature', 23
-    )
+    if len(access_token) != 0:
+        _api = NatureRemoAPIVer1(AioHttpWrapper(session), access_token)
+        coordinator = hass.data[DOMAIN] = DataUpdateCoordinator(
+            hass,
+            LOGGER,
+            name="Nature Remo update",
+            update_method=__get_update_method(_api),
+            update_interval=DEFAULT_UPDATE_INTERVAL,
+        )
+        await coordinator.async_refresh()
+    else:
+        # TODO: Add Custom Error
+        raise RuntimeError("Error:Token is not set")
+
+    data = {
+        "api": _api,
+        "coordinator": coordinator,
+        "config": conf,
+    }
     hass.data[DOMAIN] = data
-    LOGGER.debug(f"setup2: {data}")
     for component in PLATFORMS:
         hass.async_create_task(
             hass.helpers.discovery.async_load_platform(component, DOMAIN, {}, config)
@@ -81,10 +70,61 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
     return True
 
 
-async def async_setup_entry(hass: core.HomeAssistant, config: dict) -> bool:
-    LOGGER.debug(f"setup entry: {config}")
-    """Set up the Nature Remo from a config entry."""
-    # @TODO: Add setup code.
-    hass.data.setdefault(DOMAIN, {})
+# async def async_setup_entry(hass: core.HomeAssistant, config: dict) -> bool:
+#     LOGGER.debug(f"setup entry: {config}")
+#     """Set up the Nature Remo from a config entry."""
+#     # @TODO: Add setup code.
+#     hass.data.setdefault(DOMAIN, {})
+#
+#     return True
 
-    return True
+
+class NatureRemoBase(Entity):
+    """Nature Remo entity base class."""
+
+    def __init__(self, coordinator, appliance: Appliance):
+        self._coordinator = coordinator
+        self._attr_name = f"Nature Remo {appliance.nickname}"
+        self._appliance_id = appliance.id
+        self._device = appliance.device
+        self._attr_unique_id = self._appliance_id
+        self._attr_should_poll = False
+        self._attr_device_info = DeviceInfo(
+            default_manufacturer="Nature Remo",
+            identifiers={(DOMAIN, self._device.id)},
+            model=self._device.serial_number,
+            name=self._device.name,
+            sw_version=self._device.firmware_version
+        )
+
+
+class NatureRemoDeviceBase(Entity):
+    """Nature Remo Device entity base class."""
+
+    def __init__(self, coordinator, device: Device):
+        self._coordinator = coordinator
+        self._attr_name = f"Nature Remo {device.name}"
+        self._device = device
+        self._coordinator = coordinator
+        self._appliance_id = device.id
+        self._attr_unique_id = self._appliance_id
+        self._attr_should_poll = True
+        self._attr_device_info = DeviceInfo(
+            default_manufacturer="Nature Remo",
+            identifiers={(DOMAIN, self._device.id)},
+            model=self._device.serial_number,
+            name=self._device.name,
+            sw_version=self._device.firmware_version
+        )
+
+    async def async_added_to_hass(self):
+        """Subscribe to updates."""
+        self.async_on_remove(
+            self._coordinator.async_add_listener(self.async_write_ha_state)
+        )
+
+    async def async_update(self):
+        """Update the entity.
+        Only used by the generic entity update service.
+        """
+        await self._coordinator.async_request_refresh()

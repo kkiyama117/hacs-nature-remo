@@ -197,5 +197,8 @@ class NatureRemoAC(NatureRemoBase, ClimateEntity):
 
 
 def _get_temp_range_list(modes, mode: str):
-    temp_range = modes.get(mode).temp
-    return list(map(float, filter(None, temp_range)))
+    if mode is not None:
+        temp_range = modes.get(mode).temp
+        return list(map(float, filter(None, temp_range)))
+    else:
+        return []

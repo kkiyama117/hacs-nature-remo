@@ -117,7 +117,8 @@ class NatureRemoAPIVer1:
         self.__set_rate_limit(resp)
         if resp.ok:
             return resp.json()
-        raise NatureRemoError(build_error_message(resp))
+        error_message = build_error_message(resp)
+        raise NatureRemoError(error_message)
 
     def __set_rate_limit(self, resp: Response):
         if "Date" in resp.headers:
@@ -183,7 +184,7 @@ class NatureRemoAPIVer1:
         endpoint = f"{self._endpoint_base}/devices/{device}"
         resp = await self.__request(endpoint, HTTPMethod.POST, {"name": name})
         if not resp.ok:
-            raise NatureRemoError(build_error_message(resp))
+            raise NatureRemoError(await build_error_message(resp))
 
     async def delete_device(self, device: str):
         """Delete Remo.
@@ -194,7 +195,7 @@ class NatureRemoAPIVer1:
         endpoint = f"{self._endpoint_base}/devices/{device}/delete"
         resp = await self.__request(endpoint, HTTPMethod.POST)
         if not resp.ok:
-            raise NatureRemoError(build_error_message(resp))
+            raise NatureRemoError(await build_error_message(resp))
 
     async def update_temperature_offset(self, device: str, offset: int):
         """Update temperature offset.
@@ -206,7 +207,7 @@ class NatureRemoAPIVer1:
         endpoint = f"{self._endpoint_base}/devices/{device}/temperature_offset"
         resp = await self.__request(endpoint, HTTPMethod.POST, {"offset": offset})
         if not resp.ok:
-            raise NatureRemoError(build_error_message(resp))
+            raise NatureRemoError(await build_error_message(resp))
 
     async def update_humidity_offset(self, device: str, offset: int):
         """Update humidity offset.
@@ -218,7 +219,7 @@ class NatureRemoAPIVer1:
         endpoint = f"{self._endpoint_base}/devices/{device}/humidity_offset"
         resp = await self.__request(endpoint, HTTPMethod.POST, {"offset": offset})
         if not resp.ok:
-            raise NatureRemoError(build_error_message(resp))
+            raise NatureRemoError(await build_error_message(resp))
 
     async def detect_appliance(self, message: str) -> List[ApplianceModelAndParams]:
         """Find the air conditioner best matching the provided infrared signal.
@@ -282,7 +283,7 @@ class NatureRemoAPIVer1:
             endpoint, HTTPMethod.POST, {"appliances": appliances}
         )
         if not resp.ok:
-            raise NatureRemoError(build_error_message(resp))
+            raise NatureRemoError(await build_error_message(resp))
 
     async def delete_appliance(self, appliance: str):
         """Delete appliance.
@@ -293,7 +294,7 @@ class NatureRemoAPIVer1:
         endpoint = f"{self._endpoint_base}/appliances/{appliance}/delete"
         resp = await self.__request(endpoint, HTTPMethod.POST)
         if not resp.ok:
-            raise NatureRemoError(build_error_message(resp))
+            raise NatureRemoError(await build_error_message(resp))
 
     async def update_appliance(
             self, appliance: str, nickname: str, image: str
@@ -345,7 +346,7 @@ class NatureRemoAPIVer1:
             data["button"] = button
         resp = await self.__request(endpoint, HTTPMethod.POST, data)
         if not resp.ok:
-            raise NatureRemoError(build_error_message(resp))
+            raise NatureRemoError(await build_error_message(resp))
 
     async def send_tv_infrared_signal(self, appliance: str, button: str):
         """Send tv infrared signal.
@@ -357,7 +358,7 @@ class NatureRemoAPIVer1:
         endpoint = f"{self._endpoint_base}/appliances/{appliance}/tv"
         resp = await self.__request(endpoint, HTTPMethod.POST, {"button": button})
         if not resp.ok:
-            raise NatureRemoError(build_error_message(resp))
+            raise NatureRemoError(await build_error_message(resp))
 
     async def send_light_infrared_signal(self, appliance: str, button: str):
         """Send light infrared signal.
@@ -369,7 +370,7 @@ class NatureRemoAPIVer1:
         endpoint = f"{self._endpoint_base}/appliances/{appliance}/light"
         resp = await self.__request(endpoint, HTTPMethod.POST, {"button": button})
         if not resp.ok:
-            raise NatureRemoError(build_error_message(resp))
+            raise NatureRemoError(await build_error_message(resp))
 
     async def get_signals(self, appliance: str) -> List[Signal]:
         """Fetch signals registered under this appliance.
@@ -413,7 +414,7 @@ class NatureRemoAPIVer1:
         endpoint = f"{self._endpoint_base}/appliances/{appliance}/signal_orders"
         resp = await self.__request(endpoint, HTTPMethod.POST, {"signals": signals})
         if not resp.ok:
-            raise NatureRemoError(build_error_message(resp))
+            raise NatureRemoError(await build_error_message(resp))
 
     async def update_signal(self, signal: str, name: str, image: str):
         """Update infrared signal.
@@ -428,7 +429,7 @@ class NatureRemoAPIVer1:
             endpoint, HTTPMethod.POST, {"name": name, "image": image}
         )
         if not resp.ok:
-            raise NatureRemoError(build_error_message(resp))
+            raise NatureRemoError(await build_error_message(resp))
 
     async def delete_signal(self, signal: str):
         """Delete infrared signal.
@@ -439,7 +440,7 @@ class NatureRemoAPIVer1:
         endpoint = f"{self._endpoint_base}/signals/{signal}/delete"
         resp = await self.__request(endpoint, HTTPMethod.POST)
         if not resp.ok:
-            raise NatureRemoError(build_error_message(resp))
+            raise NatureRemoError(await build_error_message(resp))
 
     async def send_signal(self, signal: str):
         """Send infrared signal.
@@ -450,7 +451,7 @@ class NatureRemoAPIVer1:
         endpoint = f"{self._endpoint_base}/signals/{signal}/send"
         resp = await self.__request(endpoint, HTTPMethod.POST)
         if not resp.ok:
-            raise NatureRemoError(build_error_message(resp))
+            raise NatureRemoError(await build_error_message(resp))
 
 
 class NatureRemoLocalAPIVer1:

@@ -43,7 +43,6 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     _data = hass.data.get(DOMAIN)
     coordinator = _data.get(KEY_COORDINATOR, DEFAULT_COORDINATOR_SCHEMA)
     appliances = coordinator.data.get(KEY_APPLIANCES)
-    devices = coordinator.data.get("devices")
     api = _data.get("api")
     config = _data.get("config")
     async_add_entities(
@@ -62,20 +61,21 @@ class NatureRemoAC(NatureRemoBase, ClimateEntity):
         super().__init__(coordinator, appliance)
         self._api = api
         self.__modes: Dict[str, AirConRangeMode] = appliance.aircon.range.modes
-        self.__current_mode: str = ""
+        self.__current_mode: str = "power-off"
 
+        # Update List
         self._attr_supported_features = SUPPORT_FLAGS
         self._attr_temperature_unit = TEMP_CELSIUS
         for v in AIRCON_MODES_REMO:
             self._set_last_target_temp(v, None)
+        self._set_hvac_modes()
+        self._set_target_temperature_step()
         self._update(appliance.settings)
 
     def _update(self, ac_settings: AirConParams, device: Device = None):
         # hold this to determine the ac mode while it's turned-off
         _remo_mode_key = ac_settings.mode
         _remo_mode_value = self.__modes.get(_remo_mode_key)
-        # Update List
-        self._set_hvac_modes()
 
         # Update target temperature
         try:
@@ -116,7 +116,7 @@ class NatureRemoAC(NatureRemoBase, ClimateEntity):
         target_temp = kwargs.get(ATTR_TEMPERATURE)
         if target_temp is None:
             return
-        if not target_temp.is_integer():
+        if target_temp.is_integer():
             # has to cast to whole number otherwise API will return an error
             target_temp = int(target_temp)
         _LOGGER.debug("Set temperature: %d", target_temp)
@@ -126,7 +126,7 @@ class NatureRemoAC(NatureRemoBase, ClimateEntity):
         """Set new target hvac mode."""
         _LOGGER.debug("Set hvac mode: %s", hvac_mode)
         mode = _mode_ha_to_remo(hvac_mode)
-        if _check_mode_is_off(hvac_mode):
+        if _check_mode_is_off(mode):
             await self._post({"button": mode})
         else:
             data = {"operation_mode": mode}
@@ -166,8 +166,8 @@ class NatureRemoAC(NatureRemoBase, ClimateEntity):
         self.async_write_ha_state()
 
     async def _post(self, data):
-        response = await self._api.update_aircon_settings(data)
-        self._update(response)
+        await self._api.update_aircon_settings(self._appliance_id, **data)
+        await self._coordinator.async_request_refresh()
         self.async_write_ha_state()
 
     def _set_target_temperature_step(self):
@@ -176,7 +176,9 @@ class NatureRemoAC(NatureRemoBase, ClimateEntity):
             # determine step from the gap of first and second temperature
             step = round(temp_range[1] - temp_range[0], 1)
             if step in [1.0, 0.5]:  # valid steps
+                self._attr_target_temperature_step = step
                 return step
+        self._attr_target_temperature_step = 1
         return 1
 
     def _set_hvac_modes(self):

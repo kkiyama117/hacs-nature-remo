@@ -21,9 +21,9 @@ CONFIG_SCHEMA = vol.Schema({
 def __get_update_method(_api: NatureRemoAPIVer1):
     async def __inner__():
         LOGGER.debug("Trying to fetch appliance and device list from API.")
-        appliances = await _api.get_appliances()
-        devices = await _api.get_devices()
-        return {"appliances": appliances, "devices": devices}
+        appliances = _api.get_appliances()
+        devices = _api.get_devices()
+        return {"appliances": await appliances, "devices": await devices}
 
     return __inner__
 
@@ -82,7 +82,7 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
 class NatureRemoBase(Entity):
     """Nature Remo entity base class."""
 
-    def __init__(self, coordinator, appliance: Appliance):
+    def __init__(self, coordinator: DataUpdateCoordinator, appliance: Appliance):
         self._coordinator = coordinator
         self._attr_name = f"Nature Remo {appliance.nickname}"
         self._appliance_id = appliance.id

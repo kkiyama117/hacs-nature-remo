@@ -12,4 +12,4 @@ def _mode_remo_to_ha(mode: str) -> str:
 
 
 def _check_mode_is_off(mode: str) -> bool:
-    return mode == MODE_HA_TO_REMO.get(HVAC_MODE_OFF)
+    return mode == "power-off"

@@ -480,7 +480,8 @@ class NatureRemoLocalAPIVer1:
         except OSError as e:
             raise NatureRemoError(e)
 
-    def __get_json(self, resp: Response) -> Coroutine[Any, Any, Any]:
+    @staticmethod
+    def __get_json(resp: Response) -> Coroutine[Any, Any, Any]:
         if resp.ok:
             return resp.json()
         raise NatureRemoError(f"{resp.status_code} {resp.reason}")

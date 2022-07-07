@@ -1,11 +1,17 @@
 """Support for Nature Remo AC."""
 import logging
-from typing import List
 
 from homeassistant.components.switch import SwitchEntity
 from remo.models import Appliance
 
-from . import DOMAIN, NatureRemoAPIVer1, NatureRemoBase
+from . import (
+    DEFAULT_COORDINATOR_SCHEMA,
+    DOMAIN,
+    KEY_APPLIANCES,
+    KEY_COORDINATOR,
+    NatureRemoAPIVer1,
+    NatureRemoBase,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -16,9 +22,8 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
         return
     _LOGGER.debug("Setting up IR platform.")
     _data = hass.data.get(DOMAIN)
-    coordinator = _data.get("coordinator")
-    appliances = coordinator.data.get("appliances")
-    devices = coordinator.data.get("devices")
+    coordinator = _data.get(KEY_COORDINATOR, DEFAULT_COORDINATOR_SCHEMA)
+    appliances = coordinator.data.get(KEY_APPLIANCES)
     api = _data.get("api")
     config = _data.get("config")
     async_add_entities(

@@ -17,7 +17,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     _LOGGER.debug("Setting up IR platform.")
     _data = hass.data.get(DOMAIN)
     coordinator = _data.get("coordinator")
-    appliances: List[Appliance] = coordinator.data.get("appliances")
+    appliances = coordinator.data.get("appliances")
     devices = coordinator.data.get("devices")
     api = _data.get("api")
     config = _data.get("config")

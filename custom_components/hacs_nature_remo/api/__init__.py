@@ -113,11 +113,11 @@ class NatureRemoAPIVer1:
         except OSError as e:
             raise NatureRemoError(e)
 
-    def __get_json(self, resp: Response) -> Coroutine[Any, Any, Any]:
+    async def __get_json(self, resp: Response) -> Any:
         self.__set_rate_limit(resp)
         if resp.ok:
-            return resp.json()
-        error_message = build_error_message(resp)
+            return await resp.json()
+        error_message = await build_error_message(resp)
         raise NatureRemoError(error_message)
 
     def __set_rate_limit(self, resp: Response):

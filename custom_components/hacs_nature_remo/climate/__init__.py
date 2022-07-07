@@ -61,15 +61,15 @@ class NatureRemoAC(NatureRemoBase, ClimateEntity):
         super().__init__(coordinator, appliance)
         self._api = api
         self.__modes: Dict[str, AirConRangeMode] = appliance.aircon.range.modes
-        self.__current_mode: str = "power-off"
+        self.__current_mode: str = ""
 
-        # Update List
+        # Update static data
         self._attr_supported_features = SUPPORT_FLAGS
         self._attr_temperature_unit = TEMP_CELSIUS
         for v in AIRCON_MODES_REMO:
             self._set_last_target_temp(v, None)
         self._set_hvac_modes()
-        self._set_target_temperature_step()
+
         self._update(appliance.settings)
 
     def _update(self, ac_settings: AirConParams, device: Device = None):
@@ -77,10 +77,17 @@ class NatureRemoAC(NatureRemoBase, ClimateEntity):
         _remo_mode_key = ac_settings.mode
         _remo_mode_value = self.__modes.get(_remo_mode_key)
 
+        if ac_settings.mode:
+            self.__current_mode = ac_settings.mode
+        else:
+            self.__current_mode = "power-off"
+
+        self._set_target_temperature_step()
+
         # Update target temperature
         try:
             self._attr_target_temperature = float(ac_settings.temp)
-            self._set_last_target_temp(ac_settings.temp, ac_settings.temp)
+            self._set_last_target_temp(_remo_mode_key, self._attr_target_temperature)
         except ValueError:
             self._attr_target_temperature = None
 
@@ -132,6 +139,9 @@ class NatureRemoAC(NatureRemoBase, ClimateEntity):
             data = {"operation_mode": mode}
             _last_target_temp = self._get_last_target_temp(mode)
             if _last_target_temp is not None:
+                if _last_target_temp.is_integer():
+                    # has to cast to whole number otherwise API will return an error
+                    _last_target_temp = int(_last_target_temp)
                 data.setdefault("temperature", _last_target_temp)
             await self._post(data)
 
@@ -206,7 +216,6 @@ class NatureRemoAC(NatureRemoBase, ClimateEntity):
 
 def _get_temp_range_list(modes, mode: str):
     if mode in modes:
-        _LOGGER.debug("Get modes: %s", modes)
         temp_range = modes.get(mode).temp
         return list(map(float, filter(None, temp_range)))
     else:

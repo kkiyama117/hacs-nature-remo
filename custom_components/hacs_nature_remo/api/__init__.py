@@ -6,7 +6,6 @@ from enum import Enum, auto
 from typing import Any, Coroutine, Mapping, Optional
 
 from remo import NatureRemoError
-from remo.errors import build_error_message
 from remo.models import *
 
 BASE_URL = "https://api.nature.global"
@@ -66,6 +65,14 @@ def enable_debug_mode():
     HTTPConnection.debuglevel = 1
     logging.basicConfig()
     logging.getLogger().setLevel(logging.DEBUG)
+
+
+async def build_error_message(resp: Response) -> str:
+    error = await resp.json()
+    return (
+            f"HTTP Status Code: {resp.status_code}, "
+            + f'Nature Remo Code: {error["code"]}, Message: {error["message"]}'
+    )
 
 
 @dataclass

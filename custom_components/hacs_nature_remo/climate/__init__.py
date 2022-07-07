@@ -15,7 +15,10 @@ from remo.models import AirConParams, AirConRangeMode, Device
 
 from custom_components.hacs_nature_remo import (
     AIRCON_MODES_REMO,
+    DEFAULT_COORDINATOR_SCHEMA,
     DOMAIN,
+    KEY_APPLIANCES,
+    KEY_COORDINATOR,
     NatureRemoAPIVer1,
     NatureRemoBase,
 )
@@ -38,8 +41,8 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
         return
     _LOGGER.debug("Setting up climate platform.")
     _data = hass.data.get(DOMAIN)
-    coordinator = _data.get("coordinator")
-    appliances = coordinator.data.get("appliances")
+    coordinator = _data.get(KEY_COORDINATOR, DEFAULT_COORDINATOR_SCHEMA)
+    appliances = coordinator.data.get(KEY_APPLIANCES)
     devices = coordinator.data.get("devices")
     api = _data.get("api")
     config = _data.get("config")
@@ -63,7 +66,8 @@ class NatureRemoAC(NatureRemoBase, ClimateEntity):
 
         self._attr_supported_features = SUPPORT_FLAGS
         self._attr_temperature_unit = TEMP_CELSIUS
-        self._set_last_target_temp({v: None for v in AIRCON_MODES_REMO})
+        for v in AIRCON_MODES_REMO:
+            self._set_last_target_temp(v, None)
         self._update(appliance.settings)
 
     def _update(self, ac_settings: AirConParams, device: Device = None):
@@ -76,9 +80,9 @@ class NatureRemoAC(NatureRemoBase, ClimateEntity):
         # Update target temperature
         try:
             self._attr_target_temperature = float(ac_settings.temp)
-            self._set_last_target_temp(ac_settings.temp)
+            self._set_last_target_temp(ac_settings.temp, ac_settings.temp)
         except ValueError:
-            self._set_last_target_temp(None)
+            self._attr_target_temperature = None
 
         # Update hvac mode
         if _check_mode_is_off(ac_settings.button):
@@ -181,16 +185,18 @@ class NatureRemoAC(NatureRemoBase, ClimateEntity):
         ha_modes.append(HVAC_MODE_OFF)
         self._attr_hvac_modes = ha_modes
 
-    def _set_last_target_temp(self, value):
-        if value is not None:
-            self._attr_extra_state_attributes = {
-                PREVIOUS_TARGET_TEMP_KEY: value,
-            }
-        else:
+    def _set_last_target_temp(self, mode: str, value):
+        if not hasattr(self, "_attr_extra_state_attributes"):
             self._attr_extra_state_attributes = {}
+        if mode in AIRCON_MODES_REMO:
+            self._attr_extra_state_attributes.setdefault(PREVIOUS_TARGET_TEMP_KEY, {})
+            self._attr_extra_state_attributes[PREVIOUS_TARGET_TEMP_KEY][mode] = value
+        else:
+            pass
 
     def _get_last_target_temp(self, mode):
         _last_targets = self._attr_extra_state_attributes.get(PREVIOUS_TARGET_TEMP_KEY)
+        _LOGGER.debug(_last_targets)
         if _last_targets is not None and _last_targets.get(mode):
             return _last_targets.get(mode)
         return None

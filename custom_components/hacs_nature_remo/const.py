@@ -16,7 +16,7 @@ DOMAIN: str = "hacs_nature_remo"
 
 LOGGER: Logger = getLogger(__package__)
 
-DEFAULT_UPDATE_INTERVAL = timedelta(seconds=60)
+DEFAULT_UPDATE_INTERVAL = timedelta(seconds=90)
 
 # For climate
 MODE_HA_TO_REMO = {
@@ -38,3 +38,13 @@ MODE_REMO_TO_HA = {
 }
 
 AIRCON_MODES_REMO = MODE_REMO_TO_HA.keys()
+KEY_COORDINATOR = "coordinator"
+KEY_APPLIANCES = "appliances"
+DEFAULT_DATA_SCHEMA = {
+    KEY_COORDINATOR: None,
+    KEY_APPLIANCES: None
+}
+DEFAULT_COORDINATOR_SCHEMA = {
+    KEY_COORDINATOR: None,
+    KEY_APPLIANCES: None
+}

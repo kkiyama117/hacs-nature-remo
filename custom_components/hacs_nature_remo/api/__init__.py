@@ -234,7 +234,6 @@ class NatureRemoAPIVer1:
         endpoint = f"{self._endpoint_base}/appliances"
         resp = await self.__request(endpoint, HTTPMethod.GET)
         json = await self.__get_json(resp)
-        print("AAAAAAAAAAAAAAAAAA",json)
         return ApplianceSchema(many=True).load(json)
 
     async def create_appliance(

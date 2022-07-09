@@ -1,6 +1,10 @@
 from homeassistant.components.climate import HVAC_MODE_OFF
 
-from custom_components.hacs_nature_remo import MODE_HA_TO_REMO, MODE_REMO_TO_HA
+from custom_components.hacs_nature_remo import (
+    MODE_HA_TO_REMO,
+    MODE_REMO_TO_HA,
+    STR_POWER_OFF,
+)
 
 
 def _mode_ha_to_remo(name: str) -> str:
@@ -12,4 +16,4 @@ def _mode_remo_to_ha(mode: str) -> str:
 
 
 def _check_mode_is_off(mode: str) -> bool:
-    return mode == "power-off"
+    return mode == STR_POWER_OFF

@@ -74,7 +74,7 @@ class NatureRemoAC(NatureRemoBase, ClimateEntity):
         if ac_settings.mode:
             self.__current_mode = ac_settings.mode
         else:
-            self.__current_mode = "power-off"
+            self.__current_mode = STR_POWER_OFF
 
         self._set_target_temperature_step()
 
@@ -164,8 +164,8 @@ class NatureRemoAC(NatureRemoBase, ClimateEntity):
     @callback
     def _update_callback(self):
         self._update(
-            find_by(self._coordinator.data.get("appliances"), "id", self._appliance_id).settings,
-            find_by(self._coordinator.data.get("devices"), "id", self._device.id),
+            find_by(self._coordinator.data.get(KEY_APPLIANCES), "id", self._appliance_id).settings,
+            find_by(self._coordinator.data.get(KEY_DEVICES), "id", self._device.id),
         )
         self.async_write_ha_state()
 

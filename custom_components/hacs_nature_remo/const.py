@@ -25,13 +25,14 @@ KEY_APPLIANCES = "appliances"
 KEY_DEVICES = "devices"
 
 # For climate
+STR_POWER_OFF = "power-off"
 MODE_HA_TO_REMO = {
     HVAC_MODE_AUTO: "auto",
     HVAC_MODE_FAN_ONLY: "blow",
     HVAC_MODE_COOL: "cool",
     HVAC_MODE_DRY: "dry",
     HVAC_MODE_HEAT: "warm",
-    HVAC_MODE_OFF: "power-off",
+    HVAC_MODE_OFF: STR_POWER_OFF,
 }
 
 MODE_REMO_TO_HA = {
@@ -40,7 +41,7 @@ MODE_REMO_TO_HA = {
     "cool": HVAC_MODE_COOL,
     "dry": HVAC_MODE_DRY,
     "warm": HVAC_MODE_HEAT,
-    "power-off": HVAC_MODE_OFF,
+    STR_POWER_OFF: HVAC_MODE_OFF,
 }
 
 AIRCON_MODES_REMO = MODE_REMO_TO_HA.keys()

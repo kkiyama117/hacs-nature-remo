@@ -1,31 +1,28 @@
 """Support for Nature Remo AC."""
 import logging
+from typing import Any
 
 from homeassistant.components.switch import SwitchEntity
+from homeassistant.helpers import ConfigType
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from remo.models import Appliance
 
-from . import (
-    DEFAULT_COORDINATOR_SCHEMA,
-    DOMAIN,
-    KEY_APPLIANCES,
-    KEY_COORDINATOR,
-    NatureRemoAPIVer1,
-    NatureRemoBase,
-)
+from . import NatureRemoAPIVer1, NatureRemoBase
+from .const import *
 
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_platform(hass, config, async_add_entities, discovery_info=None) -> None:
+async def async_setup_platform(hass, config: ConfigType, async_add_entities, discovery_info=None) -> None:
     """Set up the Nature Remo IR."""
     if discovery_info is None:
         return
     _LOGGER.debug("Setting up IR platform.")
     _data = hass.data.get(DOMAIN)
-    coordinator = _data.get(KEY_COORDINATOR, DEFAULT_COORDINATOR_SCHEMA)
+    coordinator = _data.get(KEY_COORDINATOR)
     appliances = coordinator.data.get(KEY_APPLIANCES)
-    api = _data.get("api")
-    config = _data.get("config")
+    api = _data.get(KEY_API)
+    config = _data.get(KEY_CONFIG)
     async_add_entities(
         [
             NatureRemoIR(coordinator, api, appliance, config)
@@ -38,7 +35,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
 class NatureRemoIR(NatureRemoBase, SwitchEntity):
     """Implementation of a Nature Remo IR."""
 
-    def __init__(self, coordinator, api: NatureRemoAPIVer1, appliance: Appliance, config) -> None:
+    def __init__(self, coordinator: DataUpdateCoordinator, api: NatureRemoAPIVer1, appliance: Appliance) -> None:
         super().__init__(coordinator, appliance)
         self._api = api
         # self._signals = {s["name"]: s["id"] for s in appliance["signals"]}
@@ -85,3 +82,11 @@ class NatureRemoIR(NatureRemoBase, SwitchEntity):
         _LOGGER.debug("Send Signals using signal: %s, signal")
         response = await self._api.send_signal(signal)
         self.async_write_ha_state()
+
+    # this is not used because async_turn_off is overridden
+    def turn_off(self, **kwargs: Any) -> None:
+        pass
+
+    # this is not used because async_turn_on is overridden
+    def turn_on(self, **kwargs: Any) -> None:
+        pass

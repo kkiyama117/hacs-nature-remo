@@ -1,3 +1,5 @@
+from typing import Any, Dict
+
 from homeassistant import core
 from homeassistant.const import CONF_ACCESS_TOKEN
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -32,19 +34,22 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
     """Set up the Nature Remo platform."""
     # @TODO: Add setup code.
     LOGGER.debug("Setting up Nature Remo component.")
-    if config is None:
-        conf = {}
-    else:
-        conf = config
-    conf = conf.get(DOMAIN, {})
-
     session = async_get_clientsession(hass)
 
+    # default data
+    data: Dict[Any] = {
+        KEY_API: None,
+        # Need Generic type, so it is required not to be None.
+        KEY_COORDINATOR: {},
+        KEY_CONFIG: {},
+    }
+    # get config
+    conf = data[KEY_CONFIG] = (config or {}).get(DOMAIN, {})
     access_token: str = conf.get(CONF_ACCESS_TOKEN, "")
 
     if len(access_token) != 0:
-        _api = NatureRemoAPIVer1(AioHttpWrapper(session), access_token)
-        coordinator = hass.data[DOMAIN] = DataUpdateCoordinator(
+        _api = data[KEY_API] = NatureRemoAPIVer1(AioHttpWrapper(session), access_token)
+        coordinator = data[KEY_COORDINATOR] = DataUpdateCoordinator(
             hass,
             LOGGER,
             name="Nature Remo update",
@@ -56,11 +61,6 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
         # TODO: Add Custom Error
         raise RuntimeError("Error:Token is not set")
 
-    data = {
-        "api": _api,
-        "coordinator": coordinator,
-        "config": conf,
-    }
     hass.data[DOMAIN] = data
     for component in PLATFORMS:
         hass.async_create_task(
@@ -101,7 +101,7 @@ class NatureRemoBase(Entity):
 class NatureRemoDeviceBase(Entity):
     """Nature Remo Device entity base class."""
 
-    def __init__(self, coordinator, device: Device):
+    def __init__(self, coordinator: DataUpdateCoordinator, device: Device):
         self._coordinator = coordinator
         self._attr_name = f"Nature Remo {device.name}"
         self._device = device

@@ -20,10 +20,11 @@ from homeassistant.helpers.typing import (
     DiscoveryInfoType,
     HomeAssistantType,
 )
-from remo.models import Appliance, Device
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
+from remo.models import Appliance
 
 from . import NatureRemoBase, NatureRemoDeviceBase
-from .const import DOMAIN, LOGGER
+from .const import *
 from .utils import find_by
 
 
@@ -39,9 +40,9 @@ async def async_setup_platform(
         return
     LOGGER.debug("Setting up sensor platform.")
     _data = hass.data.get(DOMAIN)
-    coordinator = _data.get("coordinator")
-    appliances = coordinator.data.get("appliances")
-    devices = coordinator.data.get("devices")
+    coordinator = _data.get(KEY_COORDINATOR)
+    appliances = coordinator.data.get(KEY_APPLIANCES)
+    devices = coordinator.data.get(KEY_DEVICES)
     entities: List[Entity] = [
         NatureRemoE(coordinator, appliance)
         for appliance in appliances
@@ -62,7 +63,7 @@ async def async_setup_platform(
 class NatureRemoE(NatureRemoBase):
     """Implementation of a Nature Remo E sensor."""
 
-    def __init__(self, coordinator, appliance):
+    def __init__(self, coordinator: DataUpdateCoordinator, appliance: Appliance):
         super().__init__(coordinator, appliance)
         self._unit_of_measurement = POWER_WATT
         self._attr_device_class = DEVICE_CLASS_POWER
@@ -70,7 +71,7 @@ class NatureRemoE(NatureRemoBase):
     @property
     def state(self):
         """Return the state of the sensor."""
-        appliances: List[Appliance] = self._coordinator.data.get("appliances")
+        appliances: List[Appliance] = self._coordinator.data.get(KEY_APPLIANCES)
         appliance = find_by(appliances, "id", self._appliance_id)
         if hasattr(appliance, 'smart_meter'):
             smart_meter = appliance.smart_meter
@@ -108,7 +109,7 @@ class NatureRemoTemperatureSensor(NatureRemoDeviceBase):
     @property
     def state(self):
         """Return the state of the sensor."""
-        devices: List[Appliance] = self._coordinator.data.get("devices")
+        devices: List[Appliance] = self._coordinator.data.get(KEY_DEVICES)
         device = find_by(devices, "id", self._device.id)
         return device.newest_events.get("te").val
 
@@ -126,7 +127,7 @@ class NatureRemoHumiditySensor(NatureRemoDeviceBase):
     @property
     def state(self):
         """Return the state of the sensor."""
-        devices: List[Appliance] = self._coordinator.data.get("devices")
+        devices: List[Appliance] = self._coordinator.data.get(KEY_DEVICES)
         device = find_by(devices, "id", self._device.id)
         return device.newest_events.get("hu").val
 
@@ -134,7 +135,7 @@ class NatureRemoHumiditySensor(NatureRemoDeviceBase):
 class NatureRemoIlluminanceSensor(NatureRemoDeviceBase):
     """Implementation of a Nature Remo sensor."""
 
-    def __init__(self, coordinator, appliance):
+    def __init__(self, coordinator: DataUpdateCoordinator, appliance: Appliance):
         super().__init__(coordinator, appliance)
         self._attr_name = f"Nature Remo {self._device.name} Illuminance"
         self._attr_unique_id = self._device.id + "-il"
@@ -144,6 +145,6 @@ class NatureRemoIlluminanceSensor(NatureRemoDeviceBase):
     @property
     def state(self):
         """Return the state of the sensor."""
-        devices: List[Appliance] = self._coordinator.data.get("devices")
+        devices: List[Appliance] = self._coordinator.data.get(KEY_DEVICES)
         device = find_by(devices, "id", self._device.id)
         return device.newest_events.get("il").val

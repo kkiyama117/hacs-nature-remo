@@ -4,29 +4,23 @@ from typing import Dict
 
 from homeassistant.components.climate import ClimateEntity
 from homeassistant.components.climate.const import (
-    HVAC_MODE_OFF,
     SUPPORT_FAN_MODE,
     SUPPORT_SWING_MODE,
     SUPPORT_TARGET_TEMPERATURE,
 )
 from homeassistant.const import ATTR_TEMPERATURE, TEMP_CELSIUS
 from homeassistant.core import callback
-from remo.models import AirConParams, AirConRangeMode, Device
+from homeassistant.helpers import ConfigType
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
+from remo.models import AirConParams, AirConRangeMode, Appliance, Device
 
-from custom_components.hacs_nature_remo import (
-    AIRCON_MODES_REMO,
-    DEFAULT_COORDINATOR_SCHEMA,
-    DOMAIN,
-    KEY_APPLIANCES,
-    KEY_COORDINATOR,
-    NatureRemoAPIVer1,
-    NatureRemoBase,
-)
+from custom_components.hacs_nature_remo import NatureRemoAPIVer1, NatureRemoBase
 from custom_components.hacs_nature_remo.climate.helper import (
     _check_mode_is_off,
     _mode_ha_to_remo,
     _mode_remo_to_ha,
 )
+from custom_components.hacs_nature_remo.const import *
 from custom_components.hacs_nature_remo.utils import find_by
 
 _LOGGER = logging.getLogger(__name__)
@@ -35,16 +29,16 @@ SUPPORT_FLAGS = SUPPORT_TARGET_TEMPERATURE | SUPPORT_FAN_MODE | SUPPORT_SWING_MO
 PREVIOUS_TARGET_TEMP_KEY = "previous_target_temperature"
 
 
-async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
+async def async_setup_platform(hass, config: ConfigType, async_add_entities, discovery_info=None):
     """Set up the Nature Remo AC."""
     if discovery_info is None:
         return
     _LOGGER.debug("Setting up climate platform.")
     _data = hass.data.get(DOMAIN)
-    coordinator = _data.get(KEY_COORDINATOR, DEFAULT_COORDINATOR_SCHEMA)
+    coordinator = _data.get(KEY_COORDINATOR)
     appliances = coordinator.data.get(KEY_APPLIANCES)
-    api = _data.get("api")
-    config = _data.get("config")
+    api = _data.get(KEY_API)
+    config = _data.get(KEY_CONFIG)
     async_add_entities(
         [
             NatureRemoAC(coordinator, api, appliance, config)
@@ -57,7 +51,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
 class NatureRemoAC(NatureRemoBase, ClimateEntity):
     """Implementation of a Nature Remo E sensor."""
 
-    def __init__(self, coordinator, api: NatureRemoAPIVer1, appliance, config):
+    def __init__(self, coordinator: DataUpdateCoordinator, api: NatureRemoAPIVer1, appliance: Appliance, config):
         super().__init__(coordinator, appliance)
         self._api = api
         self.__modes: Dict[str, AirConRangeMode] = appliance.aircon.range.modes

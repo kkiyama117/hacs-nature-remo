@@ -4,7 +4,7 @@ import logging
 from typing import List
 
 from homeassistant.components.light import LightEntity
-from homeassistant.helpers import ConfigType, config_validation as cv, entity_platform
+from homeassistant.helpers import config_validation as cv, entity_platform
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from remo import Appliance, Signal
 import voluptuous as vol
@@ -68,7 +68,7 @@ class NatureRemoLight(NatureRemoBase, LightEntity):
     """Implementation of a Nature Remo Light component."""
 
     def __init__(self, coordinator: DataUpdateCoordinator, api: NatureRemoAPIVer1, appliance: Appliance,
-                 config: ConfigType):
+                 config):
         super().__init__(coordinator, appliance)
         self._api = api
         self._buttons = appliance.light.buttons

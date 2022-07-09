@@ -15,11 +15,7 @@ from homeassistant.const import (
 )
 from homeassistant.helpers.entity import DeviceInfo, Entity
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.typing import (
-    ConfigType,
-    DiscoveryInfoType,
-    HomeAssistantType,
-)
+from homeassistant.helpers.typing import DiscoveryInfoType, HomeAssistantType
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from remo.models import Appliance
 
@@ -30,7 +26,7 @@ from .utils import find_by
 
 async def async_setup_platform(
         hass: HomeAssistantType,
-        config: ConfigType,
+        config,
         async_add_entities: AddEntitiesCallback,
         discovery_info: DiscoveryInfoType | None = None
 ) -> None:

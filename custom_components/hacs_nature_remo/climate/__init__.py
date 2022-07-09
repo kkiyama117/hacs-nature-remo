@@ -10,7 +10,6 @@ from homeassistant.components.climate.const import (
 )
 from homeassistant.const import ATTR_TEMPERATURE, TEMP_CELSIUS
 from homeassistant.core import callback
-from homeassistant.helpers import ConfigType
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from remo.models import AirConParams, AirConRangeMode, Appliance, Device
 
@@ -29,7 +28,7 @@ SUPPORT_FLAGS = SUPPORT_TARGET_TEMPERATURE | SUPPORT_FAN_MODE | SUPPORT_SWING_MO
 PREVIOUS_TARGET_TEMP_KEY = "previous_target_temperature"
 
 
-async def async_setup_platform(hass, config: ConfigType, async_add_entities, discovery_info=None):
+async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     """Set up the Nature Remo AC."""
     if discovery_info is None:
         return

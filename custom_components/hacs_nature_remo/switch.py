@@ -3,7 +3,6 @@ import logging
 from typing import Any
 
 from homeassistant.components.switch import SwitchEntity
-from homeassistant.helpers import ConfigType
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from remo.models import Appliance
 
@@ -13,7 +12,7 @@ from .const import *
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_platform(hass, config: ConfigType, async_add_entities, discovery_info=None) -> None:
+async def async_setup_platform(hass, config, async_add_entities, discovery_info=None) -> None:
     """Set up the Nature Remo IR."""
     if discovery_info is None:
         return

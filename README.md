@@ -33,6 +33,15 @@ please test them if you have an environment to try in the following.
   
 ## Installation
 
+### Using [hacs](https://hacs.xyz/)(recommended)
+
+1. If you have not install hacs, install it first.See [hacs official document](https://hacs.xyz/docs/setup/download)
+1. Open hacs tab and click `Integrations` (or just move to `(your home assistant url)/hacs/integrations`)
+1. Open hamburger menu in the upper right corner and click `custom repositories`
+1. Set `https://github.com/kkiyama117/hacs-nature-remo` to `Repository` textbox and select `Integration` from `Category`, then click `ADD` button.
+
+Read [hacs official wiki](https://hacs.xyz/docs/faq/custom_repositories) also.
+
 ### Manual Install
 
 1. Download this repository

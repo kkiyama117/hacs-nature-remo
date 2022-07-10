@@ -1,14 +1,13 @@
 {
+  "domain": "hacs_nature_remo",
+  "name": "Nature Remo",
   "codeowners": ["@kkiyama117"],
   "config_flow": false,
-  "dependencies": [],
   "documentation": "https://github.com/kkiyama117/hacs-nature-remo",
   "issue_tracker": "https://github.com/kkiyama117/hacs-nature-remo/issues",
-  "domain": "hacs_nature_remo",
   "iot_class": "cloud_polling",
-  "name": "Nature Remo",
   "requirements": [
     "nature-remo-fork-only-for-hacs-nature-remo"
   ],
-  "version": "0.0.2"
+  "version": "1.0.0"
 }

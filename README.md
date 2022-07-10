@@ -7,7 +7,7 @@ This is the integration for sending commands and fetching data easily from[natur
 
 This is heavily inspired by https://github.com/yutoyazaki/hass-nature-remo and its forks, but using [package](https://github.com/morinokami/nature-remo) for the part of the data exchange with API, and implemented in the way recommended by the official API for ease of maintenance.
 
-<img src="./assets/screenshot_1.png" width="600">
+![screenshot](./screenshot_1.png)
 
 ## Supported features
 
